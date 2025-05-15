@@ -7,29 +7,29 @@
 
 static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void init_list(Element** head, size_t pool_size) {
+void list_init(Node ** head, size_t pool_size) {
     pthread_mutex_lock(&list_mutex);
     mem_init(pool_size);
     *head = NULL;
     pthread_mutex_unlock(&list_mutex);
 }
 
-void append(Element** head, uint16_t value) {
+void list_insert(Node ** head, uint16_t data) {
     pthread_mutex_lock(&list_mutex);
 
-    Element* node = (Element*)mem_alloc(sizeof(Element));
+    Node * node = (Node *)mem_alloc(sizeof(Node ));
     if (!node) {
         printf("Failed to allocate new node.\n");
         pthread_mutex_unlock(&list_mutex);
         return;
     }
-    node->value = value;
+    node->data = data;
     node->next = NULL;
 
     if (*head == NULL) {
         *head = node;
     } else {
-        Element* current = *head;
+        Node * current = *head;
         while (current->next != NULL) {
             current = current->next;
         }
@@ -39,7 +39,7 @@ void append(Element** head, uint16_t value) {
     pthread_mutex_unlock(&list_mutex);
 }
 
-void insert_after(Element* node, uint16_t value) {
+void list_insert_after(Node * node, uint16_t data) {
     pthread_mutex_lock(&list_mutex);
 
     if (!node) {
@@ -48,21 +48,21 @@ void insert_after(Element* node, uint16_t value) {
         return;
     }
 
-    Element* new_node = (Element*)mem_alloc(sizeof(Element));
+    Node * new_node = (Node *)mem_alloc(sizeof(Node ));
     if (!new_node) {
         printf("Allocation failed.\n");
         pthread_mutex_unlock(&list_mutex);
         return;
     }
 
-    new_node->value = value;
+    new_node->data = data;
     new_node->next = node->next;
     node->next = new_node;
 
     pthread_mutex_unlock(&list_mutex);
 }
 
-void insert_before(Element** head, Element* node, uint16_t value) {
+void list_insert_before(Node ** head, Node * node, uint16_t data) {
     pthread_mutex_lock(&list_mutex);
 
     if (!head || !*head || !node) {
@@ -71,13 +71,13 @@ void insert_before(Element** head, Element* node, uint16_t value) {
         return;
     }
 
-    Element* new_node = (Element*)mem_alloc(sizeof(Element));
+    Node * new_node = (Node *)mem_alloc(sizeof(Node ));
     if (!new_node) {
         printf("Allocation failed.\n");
         pthread_mutex_unlock(&list_mutex);
         return;
     }
-    new_node->value = value;
+    new_node->data = data;
 
     if (*head == node) {
         new_node->next = *head;
@@ -86,7 +86,7 @@ void insert_before(Element** head, Element* node, uint16_t value) {
         return;
     }
 
-    Element* current = *head;
+    Node * current = *head;
     while (current && current->next != node) {
         current = current->next;
     }
@@ -104,7 +104,7 @@ void insert_before(Element** head, Element* node, uint16_t value) {
     pthread_mutex_unlock(&list_mutex);
 }
 
-void remove_element(Element** head, uint16_t value) {
+void list_delete(Node ** head, uint16_t data) {
     pthread_mutex_lock(&list_mutex);
 
     if (!head || !*head) {
@@ -112,17 +112,17 @@ void remove_element(Element** head, uint16_t value) {
         return;
     }
 
-    Element* current = *head;
-    Element* previous = NULL;
+    Node * current = *head;
+    Node * previous = NULL;
 
-    if (current->value == value) {
+    if (current->data == data) {
         *head = current->next;
         mem_free(current);
         pthread_mutex_unlock(&list_mutex);
         return;
     }
 
-    while (current && current->value != value) {
+    while (current && current->data != data) {
         previous = current;
         current = current->next;
     }
@@ -138,12 +138,12 @@ void remove_element(Element** head, uint16_t value) {
     pthread_mutex_unlock(&list_mutex);
 }
 
-Element* find(Element** head, uint16_t value) {
+Node * list_search(Node ** head, uint16_t data) {
     pthread_mutex_lock(&list_mutex);
 
-    Element* current = *head;
+    Node * current = *head;
     while (current) {
-        if (current->value == value) {
+        if (current->data == data) {
             pthread_mutex_unlock(&list_mutex);
             return current;
         }
@@ -154,13 +154,13 @@ Element* find(Element** head, uint16_t value) {
     return NULL;
 }
 
-void print_list(Element** head) {
+void list_display(Node ** head) {
     pthread_mutex_lock(&list_mutex);
 
-    Element* current = *head;
+    Node * current = *head;
     printf("[");
     while (current) {
-        printf("%d", current->value);
+        printf("%d", current->data);
         if (current->next) printf(", ");
         current = current->next;
     }
@@ -169,10 +169,10 @@ void print_list(Element** head) {
     pthread_mutex_unlock(&list_mutex);
 }
 
-void print_range(Element** head, Element* start, Element* end) {
+void list_display_range(Node ** head, Node * start, Node * end) {
     pthread_mutex_lock(&list_mutex);
 
-    Element* current = *head;
+    Node * current = *head;
     if (!start) start = *head;
 
     while (current && current != start) {
@@ -183,7 +183,7 @@ void print_range(Element** head, Element* start, Element* end) {
     bool first = true;
     while (current) {
         if (!first) printf(", ");
-        printf("%d", current->value);
+        printf("%d", current->data);
         if (current == end) break;
         first = false;
         current = current->next;
@@ -193,11 +193,11 @@ void print_range(Element** head, Element* start, Element* end) {
     pthread_mutex_unlock(&list_mutex);
 }
 
-int count_elements(Element** head) {
+int list_count_nodes(Node ** head) {
     pthread_mutex_lock(&list_mutex);
 
     int count = 0;
-    Element* current = *head;
+    Node * current = *head;
     while (current) {
         count++;
         current = current->next;
@@ -207,12 +207,12 @@ int count_elements(Element** head) {
     return count;
 }
 
-void clear_list(Element** head) {
+void list_cleanup(Node ** head) {
     pthread_mutex_lock(&list_mutex);
 
-    Element* current = *head;
+    Node * current = *head;
     while (current) {
-        Element* next = current->next;
+        Node * next = current->next;
         mem_free(current);
         current = next;
     }

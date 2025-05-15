@@ -1,6 +1,6 @@
 
-#ifndef memory_manager.h
-#define memory_manager.h
+#ifndef MEMORY_MANAGER_H
+#define MEMORY_MANAGER_H
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -12,4 +12,4 @@ void mem_free(void* block);
 void* mem_resize(void* block, size_t size);
 void mem_deinit();
 
-#endif // CUSTOM_MEMORY_MANAGER_H
+#endif

@@ -3,6 +3,7 @@
         "stdio.h": "c",
         "pthread.h": "c",
         "linked_list.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "stdlib.h": "c"
     }
 }
